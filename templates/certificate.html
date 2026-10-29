@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+
+{% block title %}Certificate of Python Mastery | PyCampus Quest{% endblock %}
+
+{% block content %}
+<div class="certificate-page-wrap">
+    <div class="cert-controls no-print">
+        <div class="cert-info-bar">
+            <h2>📜 Verified College Certificate of Python Mastery</h2>
+            <p>Issued upon completion of the PyCampus Quest 22-Module Gamified Curriculum.</p>
+        </div>
+        <div class="cert-btn-group">
+            <button class="btn btn-outline" onclick="window.history.back()">◀ Back</button>
+            <button class="btn btn-primary btn-glow" onclick="window.print()">
+                <span>🖨️ Print / Save as PDF</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Printable Certificate Frame -->
+    <div class="certificate-frame" id="printableCertificate">
+        <div class="cert-inner-border">
+            <div class="cert-corner top-left"></div>
+            <div class="cert-corner top-right"></div>
+            <div class="cert-corner bottom-left"></div>
+            <div class="cert-corner bottom-right"></div>
+
+            <div class="cert-header">
+                <div class="cert-crest">🎓</div>
+                <h1 class="cert-institution">PYCAMPUS UNIVERSITY OF TECHNOLOGY</h1>
+                <p class="cert-department">DEPARTMENT OF COMPUTER SCIENCE & SOFTWARE ENGINEERING</p>
+                <div class="cert-divider-line"></div>
+            </div>
+
+            <div class="cert-body">
+                <p class="cert-proclamation">THIS IS TO CERTIFY THAT</p>
+                <h2 class="cert-student-name" id="certStudentName">College Coder</h2>
+                <p class="cert-roll" id="certCollegeName">National Institute of Technology</p>
+                
+                <p class="cert-statement">
+                    has successfully conquered the <strong>PyCampus Quest Gamified Curriculum</strong>, demonstrating verified practical mastery in core, object-oriented, and advanced Python engineering concepts including:
+                </p>
+
+                <div class="cert-curriculum-tags">
+                    <span>Primitive & Non-Primitive Data Types</span>
+                    <span>Lists, Tuples, Sets, Dictionaries & Functions</span>
+                    <span>Class, Object & 4 OOP Pillars</span>
+                    <span>Exception & File Handling</span>
+                    <span>Higher Order Functions</span>
+                    <span>SQLite Database Management</span>
+                    <span>Regular Expressions</span>
+                    <span>Multithreading & Concurrency Locks</span>
+                    <span>JSON & PICKLE Serialization</span>
+                    <span>Iterators, Generators & Decorators</span>
+                </div>
+            </div>
+
+            <div class="cert-footer">
+                <div class="cert-sig-block">
+                    <div class="sig-line">Dr. Alan Turing, Ph.D.</div>
+                    <span class="sig-title">Dean of Academic Computing</span>
+                </div>
+
+                <div class="cert-gold-seal">
+                    <div class="seal-inner">
+                        <span class="seal-star">★ ★ ★</span>
+                        <span class="seal-text">VERIFIED</span>
+                        <span class="seal-year">2026</span>
+                    </div>
+                </div>
+
+                <div class="cert-sig-block">
+                    <div class="sig-line">Guido van Rossum</div>
+                    <span class="sig-title">Honorary Chair of Pythonics</span>
+                </div>
+            </div>
+
+            <div class="cert-meta-bar">
+                <span>Certificate ID: <strong id="certVerificationId">PYCAMPUS-2026-X902</strong></span>
+                <span>Issued: <strong id="certIssueDate">October 29, 2026</strong></span>
+                <span>Status: <strong class="text-succ">AUTHENTICATED & VERIFIED</strong></span>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const profile = getStudentProfile();
+        document.getElementById("certStudentName").innerText = profile.name || "College Coder";
+        document.getElementById("certCollegeName").innerText = profile.college || "PyCampus Institute of Technology";
+
+        // Generate consistent cert id from student name
+        const hash = Math.abs((profile.name || "Student").split("").reduce((a,b)=>{a=((a<<5)-a)+b.charCodeAt(0);return a&a},0));
+        document.getElementById("certVerificationId").innerText = `PYCAMPUS-2026-X${hash.toString(16).toUpperCase().padStart(4, '0')}`;
+        
+        const today = new Date();
+        document.getElementById("certIssueDate").innerText = today.toLocaleDateString("en-US", { year: 'numeric', month: 'long', day: 'numeric' });
+    });
+</script>
+{% endblock %}

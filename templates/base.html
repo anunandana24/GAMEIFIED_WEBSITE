@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}PyQuest Campus | College Python Odyssey{% endblock %}</title>
+    <!-- Modern Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    {% block head %}{% endblock %}
+</head>
+<body class="theme-dark">
+    <!-- Ambient Cyber Floating Particles Background Canvas -->
+    <canvas id="cyberBgCanvas" class="cyber-bg-canvas"></canvas>
+
+    <!-- Top Navigation Bar -->
+    <header class="navbar">
+        <div class="nav-container">
+            <a href="{{ url_for('index') }}" class="brand-logo">
+                <span class="brand-icon">🎓</span>
+                <span class="brand-text">Py<span class="gradient-text">Quest</span> Campus</span>
+                <span class="brand-tag">v3.0</span>
+            </a>
+
+            <!-- Primary navigation (desktop middle) -->
+            <nav class="nav-menu" id="navMenu">
+                <ul class="nav-list">
+                    <li>
+                        <a href="{{ url_for('index') }}" class="nav-link {% if request.endpoint == 'index' %}active{% endif %}">
+                            <span class="icon">🗺️</span><span class="label">Campus Map</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ url_for('boss_view') }}" class="nav-link {% if request.endpoint == 'boss' %}active{% endif %}">
+                            <span class="icon">👔</span><span class="label">Placement Interview</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ url_for('sandbox_view') }}" class="nav-link {% if request.endpoint == 'sandbox' %}active{% endif %}">
+                            <span class="icon">💻</span><span class="label">Python Sandbox</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+
+            <!-- Secondary campus links grouped in a compact dropdown -->
+            <div class="nav-dropdown">
+                <button class="nav-link nav-dropdown-toggle" id="navDropdownToggle" type="button" aria-label="More campus modes" aria-expanded="false" aria-haspopup="true">
+                    <span class="icon">⌘</span><span class="label">More</span><span class="dropdown-caret">▾</span>
+                </button>
+                <ul class="nav-dropdown-menu" id="navDropdownMenu">
+                    <li>
+                        <a href="{{ url_for('robo_rescue_view') }}" class="nav-dropdown-item {% if request.endpoint == 'robo_rescue_view' %}active{% endif %}">
+                            <span class="icon">🤖</span><span class="label">Robo Rescue</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ url_for('bug_hunter_view') }}" class="nav-dropdown-item {% if request.endpoint == 'bug_hunter_view' %}active{% endif %}">
+                            <span class="icon">🐛</span><span class="label">Bug Hunter</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ url_for('escape_room_view') }}" class="nav-dropdown-item {% if request.endpoint == 'escape_room_view' %}active{% endif %}">
+                            <span class="icon">🚪</span><span class="label">Escape Room</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ url_for('daily_challenge_view') }}" class="nav-dropdown-item {% if request.endpoint == 'daily_challenge_view' %}active{% endif %}">
+                            <span class="icon">📅</span><span class="label">Daily Challenge</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ url_for('arcade_view') }}" class="nav-dropdown-item {% if request.endpoint == 'arcade' %}active{% endif %}">
+                            <span class="icon">🕹️</span><span class="label">Bug Buster Arcade</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ url_for('certificate_view') }}" class="nav-dropdown-item {% if request.endpoint == 'certificate' %}active{% endif %}">
+                            <span class="icon">📜</span><span class="label">Certificate</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="nav-actions">
+                <!-- Sound Toggle -->
+                <button id="soundToggleBtn" class="action-btn icon-btn" title="Toggle Sound FX">
+                    <span id="soundIcon">🔊</span>
+                </button>
+
+                <!-- Student Status Pill with XP and Campus Gems -->
+                <div class="student-pill" id="studentProfileBtn" title="Student Profile & Stats">
+                    <div class="avatar-circle" id="navAvatar">👨‍💻</div>
+                    <div class="pill-details">
+                        <span class="student-name" id="navStudentName">Student</span>
+                        <div class="currency-row">
+                            <span class="xp-badge">
+                                <span class="xp-icon">⚡</span>
+                                <span id="navTotalXP">0</span>
+                            </span>
+                            <span class="gem-badge">
+                                <span class="gem-icon">💎</span>
+                                <span id="navTotalGems">0</span>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Mobile hamburger menu -->
+                <button class="nav-toggle" id="navToggle" aria-label="Open navigation menu" aria-expanded="false" aria-controls="navDrawer">
+                    <span class="hamburger-line"></span>
+                    <span class="hamburger-line"></span>
+                    <span class="hamburger-line"></span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Mobile navigation drawer -->
+        <nav class="nav-drawer" id="navDrawer">
+            <ul class="nav-drawer-list">
+                <li><a href="{{ url_for('index') }}" class="nav-drawer-link {% if request.endpoint == 'index' %}active{% endif %}"><span class="icon">🗺️</span><span class="label">Campus Map</span></a></li>
+                <li><a href="{{ url_for('robo_rescue_view') }}" class="nav-drawer-link {% if request.endpoint == 'robo_rescue_view' %}active{% endif %}"><span class="icon">🤖</span><span class="label">Robo Rescue</span></a></li>
+                <li><a href="{{ url_for('bug_hunter_view') }}" class="nav-drawer-link {% if request.endpoint == 'bug_hunter_view' %}active{% endif %}"><span class="icon">🐛</span><span class="label">Bug Hunter</span></a></li>
+                <li><a href="{{ url_for('escape_room_view') }}" class="nav-drawer-link {% if request.endpoint == 'escape_room_view' %}active{% endif %}"><span class="icon">🚪</span><span class="label">Escape Room</span></a></li>
+                <li><a href="{{ url_for('daily_challenge_view') }}" class="nav-drawer-link {% if request.endpoint == 'daily_challenge_view' %}active{% endif %}"><span class="icon">📅</span><span class="label">Daily Challenge</span></a></li>
+                <li><a href="{{ url_for('arcade_view') }}" class="nav-drawer-link {% if request.endpoint == 'arcade' %}active{% endif %}"><span class="icon">🕹️</span><span class="label">Bug Buster Arcade</span></a></li>
+                <li><a href="{{ url_for('boss_view') }}" class="nav-drawer-link {% if request.endpoint == 'boss' %}active{% endif %}"><span class="icon">👔</span><span class="label">Placement Interview</span></a></li>
+                <li><a href="{{ url_for('sandbox_view') }}" class="nav-drawer-link {% if request.endpoint == 'sandbox' %}active{% endif %}"><span class="icon">💻</span><span class="label">Python Sandbox</span></a></li>
+                <li><a href="{{ url_for('certificate_view') }}" class="nav-drawer-link {% if request.endpoint == 'certificate' %}active{% endif %}"><span class="icon">📜</span><span class="label">Certificate</span></a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- Global Progress Bar -->
+    <div class="global-progress-strip">
+        <div class="progress-fill" id="globalProgressBar" style="width: 0%;"></div>
+    </div>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Student Profile Modal -->
+    <div class="modal-backdrop" id="profileModal" style="display: none;">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h2>🎓 Student Identity Card</h2>
+                <button class="close-modal-btn" onclick="toggleProfileModal(false)">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="avatar-picker">
+                    <label>Choose Your College Avatar:</label>
+                    <div class="avatar-options">
+                        <button class="avatar-opt active" onclick="selectAvatar('👨‍💻')">👨‍💻</button>
+                        <button class="avatar-opt" onclick="selectAvatar('👩‍💻')">👩‍💻</button>
+                        <button class="avatar-opt" onclick="selectAvatar('🤖')">🤖</button>
+                        <button class="avatar-opt" onclick="selectAvatar('⚡')">⚡</button>
+                        <button class="avatar-opt" onclick="selectAvatar('🧙‍♂️')">🧙‍♂️</button>
+                        <button class="avatar-opt" onclick="selectAvatar('🚀')">🚀</button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="inputStudentName">Student Name:</label>
+                    <input type="text" id="inputStudentName" placeholder="Enter your full name" maxlength="30" value="College Coder">
+                </div>
+
+                <div class="form-group">
+                    <label for="inputCollegeName">College / University:</label>
+                    <input type="text" id="inputCollegeName" placeholder="e.g. National Institute of Tech" maxlength="50" value="PyCampus University">
+                </div>
+
+                <div class="profile-stats-grid">
+                    <div class="stat-box">
+                        <span class="stat-num" id="modalMasteredCount">0/22</span>
+                        <span class="stat-lbl">Concepts Mastered</span>
+                    </div>
+                    <div class="stat-box">
+                        <span class="stat-num" id="modalTotalXP">0</span>
+                        <span class="stat-lbl">Total XP Earned</span>
+                    </div>
+                    <div class="stat-box">
+                        <span class="stat-num" id="modalTotalGems">0</span>
+                        <span class="stat-lbl">💎 Campus Gems</span>
+                    </div>
+                </div>
+
+                <div class="modal-actions">
+                    <button class="btn btn-primary" onclick="saveStudentProfile()">Save Profile</button>
+                    <button class="btn btn-outline" onclick="resetAllProgress()">Reset Progress</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Interactive Campus Mystery Loot Chest Modal -->
+    <div class="modal-backdrop" id="lootModal" style="display: none;">
+        <div class="modal-card loot-card">
+            <div class="loot-glow-ring"></div>
+            <div class="loot-chest-container" onclick="openLootChest()">
+                <div class="loot-chest-icon" id="animatedLootChest">🎁</div>
+                <p class="loot-chest-hint" id="chestTapHint">✨ CLICK CHEST TO CLAIM REWARD! ✨</p>
+            </div>
+            <h2 id="lootTitle">Victory Loot Dropped!</h2>
+            <p class="loot-desc" id="lootDesc">You conquered this campus challenge! Crack open the chest to collect your engineering bounty.</p>
+            <div class="loot-rewards-grid" id="lootRewardsGrid" style="display: none;">
+                <!-- Filled dynamically by JS -->
+            </div>
+            <div class="modal-actions loot-actions-row" id="lootActions" style="display: none;">
+                <button class="btn btn-primary btn-glow btn-lg" onclick="closeLootModal()">Collect Loot & Continue 🚀</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Toast -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Audio FX Engine -->
+    <script src="{{ url_for('static', filename='js/audio.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    {% block scripts %}{% endblock %}
+
+    <!-- Navbar: mobile hamburger drawer + "More" dropdown behavior -->
+    <script>
+        (function () {
+            var navToggle = document.getElementById("navToggle");
+            var navDrawer = document.getElementById("navDrawer");
+            var dropdownToggle = document.getElementById("navDropdownToggle");
+            var dropdownMenu = document.getElementById("navDropdownMenu");
+
+            if (navToggle && navDrawer) {
+                navToggle.addEventListener("click", function () {
+                    var open = navDrawer.classList.toggle("open");
+                    navToggle.setAttribute("aria-expanded", open ? "true" : "false");
+                });
+
+                navDrawer.querySelectorAll("a").forEach(function (a) {
+                    a.addEventListener("click", function () {
+                        navDrawer.classList.remove("open");
+                        if (navToggle) navToggle.setAttribute("aria-expanded", "false");
+                    });
+                });
+
+                document.addEventListener("click", function (e) {
+                    if (navDrawer.classList.contains("open") &&
+                        !navDrawer.contains(e.target) &&
+                        navToggle && !navToggle.contains(e.target)) {
+                        navDrawer.classList.remove("open");
+                        if (navToggle) navToggle.setAttribute("aria-expanded", "false");
+                    }
+                });
+            }
+
+            if (dropdownToggle && dropdownMenu) {
+                dropdownToggle.addEventListener("click", function (e) {
+                    e.stopPropagation();
+                    var open = dropdownMenu.classList.toggle("open");
+                    dropdownToggle.setAttribute("aria-expanded", open ? "true" : "false");
+                    var caret = dropdownToggle.querySelector(".dropdown-caret");
+                    if (caret) caret.style.transform = open ? "rotate(180deg)" : "";
+                });
+
+                document.addEventListener("click", function (e) {
+                    if (dropdownMenu.classList.contains("open") &&
+                        !dropdownToggle.contains(e.target)) {
+                        dropdownMenu.classList.remove("open");
+                        dropdownToggle.setAttribute("aria-expanded", "false");
+                        var caret = dropdownToggle.querySelector(".dropdown-caret");
+                        if (caret) caret.style.transform = "";
+                    }
+                });
+
+                // Close the More dropdown (and mobile drawer) on Escape key
+                document.addEventListener("keydown", function (e) {
+                    if (e.key === "Escape") {
+                        if (dropdownMenu.classList.contains("open")) {
+                            dropdownMenu.classList.remove("open");
+                            dropdownToggle.setAttribute("aria-expanded", "false");
+                            var caret = dropdownToggle.querySelector(".dropdown-caret");
+                            if (caret) caret.style.transform = "";
+                        }
+                        if (navDrawer && navDrawer.classList.contains("open")) {
+                            navDrawer.classList.remove("open");
+                            if (navToggle) navToggle.setAttribute("aria-expanded", "false");
+                        }
+                    }
+                });
+            }
+        })();
+    </script>
+</body>
+</html>

@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block title %}Bug Hunter | PyQuest Campus{% endblock %}
+
+{% block content %}
+<div class="arcade-container">
+    <div class="arcade-hero">
+        <div class="arcade-badge-tag">🐛 DEBUG MISSION</div>
+        <h1 class="arcade-title">Bug Hunter</h1>
+        <p class="arcade-sub">Find and fix bugs in broken Python programs. Debug like a pro!</p>
+    </div>
+
+    <div class="arcade-machine">
+        <div class="machine-header">
+            <div class="machine-stat">
+                <span class="stat-label">BUGS FOUND</span>
+                <span class="stat-digit">0/1</span>
+            </div>
+            <div class="machine-stat">
+                <span class="stat-label">DIFFICULTY</span>
+                <span class="stat-digit">BEGINNER</span>
+            </div>
+            <div class="machine-stat">
+                <span class="stat-label">BONUS</span>
+                <span class="stat-digit">+50 XP</span>
+            </div>
+        </div>
+
+        <div class="machine-screen">
+            <div class="screen-play-state">
+                <div class="arcade-question-count">Case File #001: Division Disaster</div>
+                <h3 class="arcade-question-text">Fix the bug so it doesn't crash on division</h3>
+                <div class="arcade-code-box">
+                    <pre><code>def divide(a, b):
+    return a / b  # BUG HERE
+
+# Expected: Handle division by zero
+print(divide(10, 0))</code></pre>
+                </div>
+                <p style="color: var(--brand-rose); margin-top: 1rem;">Error: ZeroDivisionError: division by zero</p>
+                <div class="arcade-over-actions" style="margin-top: 2rem;">
+                    <a href="{{ url_for('sandbox_view') }}" class="btn btn-primary btn-glow">Fix in Sandbox</a>
+                    <a href="{{ url_for('index') }}" class="btn btn-outline">Back to Home</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

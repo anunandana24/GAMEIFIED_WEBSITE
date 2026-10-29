@@ -1,0 +1,234 @@
+{% extends "base.html" %}
+
+{% block title %}PyCampus Quest | College Python Odyssey - Campus Map{% endblock %}
+
+{% block content %}
+<div class="campus-container">
+    <!-- Hero Banner -->
+    <section class="campus-hero">
+        <div class="hero-left">
+            <div class="hero-tag">
+                <span class="pulse-dot"></span>
+                <span>Campus Semester 2026 Active</span>
+            </div>
+            <h1 class="hero-title">
+                Welcome to <span class="gradient-text">PyCampus Quest</span>
+            </h1>
+            <p class="hero-subtitle">
+                The ultimate gamified Python odyssey engineered for college students. Play interactive campus quests, decode core algorithms, unlock the hidden knowledge archives, and crack high-paying tech placements!
+            </p>
+
+            <div class="hero-stats-row">
+                <div class="hero-stat-card">
+                    <span class="stat-icon">🎓</span>
+                    <div>
+                        <div class="stat-value" id="heroRank">Fresher</div>
+                        <div class="stat-label">Academic Rank</div>
+                    </div>
+                </div>
+                <div class="hero-stat-card">
+                    <span class="stat-icon">⚡</span>
+                    <div>
+                        <div class="stat-value" id="heroXP">0 XP</div>
+                        <div class="stat-label">Experience Points</div>
+                    </div>
+                </div>
+                <div class="hero-stat-card">
+                    <span class="stat-icon">🏆</span>
+                    <div>
+                        <div class="stat-value" id="heroMastered">0 / 22</div>
+                        <div class="stat-label">Concepts Mastered</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="hero-cta-group">
+                <a href="#campus-curriculum" class="btn btn-primary btn-glow">
+                    <span>🚀 Launch Next Mission</span>
+                </a>
+                <a href="{{ url_for('boss_view') }}" class="btn btn-boss">
+                    <span>👔 Placement Boss Battle</span>
+                </a>
+                <a href="{{ url_for('arcade_view') }}" class="btn btn-outline">
+                    <span>🕹️ Bug Buster Speed Run</span>
+                </a>
+            </div>
+        </div>
+
+        <div class="hero-right">
+            <div class="student-id-badge">
+                <div class="badge-header">
+                    <div class="badge-chip"></div>
+                    <span class="badge-school" id="idBadgeSchool">PyCampus University</span>
+                </div>
+                <div class="badge-body">
+                    <div class="badge-avatar" id="idBadgeAvatar">👨‍💻</div>
+                    <div class="badge-info">
+                        <h3 id="idBadgeName">College Coder</h3>
+                        <p class="badge-sub" id="idBadgeRoll">USN: 2026-PY-1042</p>
+                        <div class="badge-tier" id="idBadgeTier">Tier 1: Freshman Apprentice</div>
+                    </div>
+                </div>
+                <div class="badge-footer">
+                    <div class="badge-bar-label">
+                        <span>Curriculum Mastery</span>
+                        <span id="idBadgePct">0%</span>
+                    </div>
+                    <div class="badge-progress-track">
+                        <div class="badge-progress-fill" id="idBadgeFill" style="width: 0%;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Campus Map & Levels Section -->
+    <section class="campus-levels-section" id="campus-curriculum">
+        <div class="section-header">
+            <div>
+                <h2 class="section-title">🗺️ Campus Academic Quest Map</h2>
+                <p class="section-subtitle">22 In-Depth Gamified Modules: All content is locked inside campus vaults until you beat the interactive mini-game challenge!</p>
+            </div>
+            <div class="filter-pills">
+                <button class="filter-pill active" onclick="filterQuarters('all')">All Zones</button>
+                <button class="filter-pill" onclick="filterQuarters('Freshman Core')">Freshman Core</button>
+                <button class="filter-pill" onclick="filterQuarters('Data Structures')">Collections & Functions</button>
+                <button class="filter-pill" onclick="filterQuarters('OOP Mastery')">OOP Mastery</button>
+                <button class="filter-pill" onclick="filterQuarters('Advanced Engineering')">Advanced Engineering</button>
+            </div>
+        </div>
+
+        <div class="levels-grid" id="levelsGrid">
+            {% for level in levels %}
+            <div class="level-card" data-category="{{ level.category }}" id="levelCard-{{ level.id }}">
+                <div class="level-card-top">
+                    <span class="level-num">Level {{ level.order }}</span>
+                    <span class="level-cat-tag">{{ level.category }}</span>
+                    <span class="level-status-icon" id="statusIcon-{{ level.id }}">🔒</span>
+                </div>
+
+                <div class="level-card-main">
+                    <div class="level-badge-display">
+                        <span class="level-emoji">{{ level.badge_icon }}</span>
+                    </div>
+                    <div class="level-text-content">
+                        <h3 class="level-title">{{ level.title }}</h3>
+                        <span class="level-theme-tag">🏫 {{ level.college_theme }}</span>
+                        <p class="level-mission-preview">{{ level.mission }}</p>
+                    </div>
+                </div>
+
+                <div class="level-card-bottom">
+                    <div class="level-xp-reward">
+                        <span class="xp-star">⚡</span>
+                        <span>+{{ level.xp }} XP</span>
+                    </div>
+                    <a href="{{ url_for('level_view', level_id=level.id) }}" class="btn btn-sm btn-play" id="playBtn-{{ level.id }}">
+                        <span>🎮 Play Game</span>
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+
+    <!-- Campus Placement Boss Callout -->
+    <section class="boss-callout-banner">
+        <div class="callout-content">
+            <span class="boss-tag">🏆 ULTIMATE CAPSTONE TEST</span>
+            <h2>Campus Placement Technical Interview Simulator</h2>
+            <p>Ready to test your skills in front of the Tech Interview Panel? Face a realistic 3-round technical interview covering Algorithms, OOP System Architecture, and Concurrency.</p>
+            <a href="{{ url_for('boss_view') }}" class="btn btn-boss btn-lg">
+                <span>👔 Enter Interview Chamber</span>
+            </a>
+        </div>
+        <div class="callout-graphic">
+            <div class="recruiter-box">
+                <span class="recruiter-avatar">👨‍💼</span>
+                <div class="recruiter-quote">
+                    "Welcome candidate. Let's see if your Python chops match industry expectations!"
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Campus Hall of Fame (Leaderboard) -->
+    <section class="leaderboard-section">
+        <div class="section-header">
+            <div>
+                <h2 class="section-title">🏅 Campus Hall of Fame</h2>
+                <p class="section-subtitle">Top engineering scholars across university campuses</p>
+            </div>
+        </div>
+
+        <div class="leaderboard-table-card">
+            <table class="leaderboard-table">
+                <thead>
+                    <tr>
+                        <th>Rank</th>
+                        <th>Student</th>
+                        <th>College</th>
+                        <th>Mastery Badge</th>
+                        <th>Total XP</th>
+                    </tr>
+                </thead>
+                <tbody id="leaderboardTbody">
+                    <!-- Populated dynamically via JS API -->
+                    <tr>
+                        <td colspan="5" class="text-center">Loading rankings...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        refreshCampusDashboard();
+        loadLeaderboard();
+    });
+
+    function filterQuarters(cat) {
+        document.querySelectorAll(".filter-pill").forEach(p => p.classList.remove("active"));
+        event.target.classList.add("active");
+
+        const cards = document.querySelectorAll(".level-card");
+        cards.forEach(card => {
+            if (cat === "all" || card.dataset.category === cat) {
+                card.style.display = "flex";
+            } else {
+                card.style.display = "none";
+            }
+        });
+    }
+
+    async function loadLeaderboard() {
+        try {
+            const resp = await fetch("/api/leaderboard");
+            const data = await resp.json();
+            if (data.status === "success") {
+                const tbody = document.getElementById("leaderboardTbody");
+                tbody.innerHTML = data.leaderboard.map(s => `
+                    <tr>
+                        <td class="rank-col">
+                            <span class="rank-medal rank-${s.rank}">#${s.rank}</span>
+                        </td>
+                        <td class="student-col">
+                            <span class="table-avatar">${s.avatar}</span>
+                            <span class="table-name">${s.name}</span>
+                        </td>
+                        <td>${s.college}</td>
+                        <td><span class="badge-pill">${s.badge}</span></td>
+                        <td class="xp-col">⚡ ${s.xp} XP</td>
+                    </tr>
+                `).join("");
+            }
+        } catch (err) {
+            console.error("Leaderboard load failed", err);
+        }
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,338 @@
+{% extends "base.html" %}
+
+{% block title %}Level {{ level.order }}: {{ level.title }} | PyQuest Campus{% endblock %}
+
+{% block content %}
+<div class="level-page-container" id="levelContainer" data-level-id="{{ level.id }}" data-level-order="{{ level.order }}" data-level-xp="{{ level.xp }}">
+    <!-- Level Header & Navigation Bar -->
+    <div class="level-top-nav">
+        <div class="nav-breadcrumbs">
+            <a href="{{ url_for('index') }}" class="breadcrumb-link">🗺️ Campus Map</a>
+            <span class="breadcrumb-sep">/</span>
+            <span class="breadcrumb-cat">{{ level.category }}</span>
+            <span class="breadcrumb-sep">/</span>
+            <span class="breadcrumb-current">Level {{ level.order }}: {{ level.title }}</span>
+        </div>
+
+        <div class="level-nav-buttons">
+            <a href="{{ url_for('index') }}" class="btn btn-sm btn-outline nav-home-btn" title="Back to Campus Map">
+                <span>🏠 Home / Map</span>
+            </a>
+            {% if prev_level %}
+            <a href="{{ url_for('level_view', level_id=prev_level.id) }}" class="btn btn-sm btn-outline">
+                <span>◀ Lvl {{ prev_level.order }}: {{ prev_level.title }}</span>
+            </a>
+            {% endif %}
+            {% if next_level %}
+            <a href="{{ url_for('level_view', level_id=next_level.id) }}" class="btn btn-sm btn-primary btn-glow">
+                <span>Lvl {{ next_level.order }}: {{ next_level.title }} ▶</span>
+            </a>
+            {% else %}
+            <a href="{{ url_for('boss_view') }}" class="btn btn-sm btn-boss btn-glow">
+                <span>👔 Placement Boss Battle ▶</span>
+            </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Mission Header Card -->
+    <div class="level-mission-card">
+        <div class="mission-header-row">
+            <div class="mission-badge-circle">
+                <span class="badge-icon-lg">{{ level.badge_icon }}</span>
+            </div>
+            <div class="mission-title-col">
+                <div class="mission-tags-row">
+                    <span class="tag-pill tag-primary">Level {{ level.order }} of {{ total_levels }}</span>
+                    <span class="tag-pill tag-theme">🏫 {{ level.college_theme }}</span>
+                    <span class="tag-pill tag-xp">⚡ +{{ level.xp }} XP</span>
+                </div>
+                <h1 class="mission-main-title">{{ level.title }}</h1>
+                <p class="mission-statement">{{ level.mission }}</p>
+            </div>
+            <div class="mission-status-col">
+                <div class="status-shield" id="levelStatusShield">
+                    <span class="shield-icon" id="shieldIcon">🔒</span>
+                    <span class="shield-label" id="shieldLabel">Vault Locked</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- STAGE 1: THE INTERACTIVE MINI-GAME ARENA -->
+    <section class="game-arena-section" id="gameArena">
+        <div class="arena-card">
+            <div class="arena-header">
+                <div class="arena-title-wrap">
+                    <span class="controller-icon">🕹️</span>
+                    <div>
+                        <h2>Campus Interactive Game Arena</h2>
+                        <span class="arena-subtitle">Complete this interactive mission to unlock the concept notes & code challenge!</span>
+                    </div>
+                </div>
+                <div class="arena-controls">
+                    <button class="btn btn-sm btn-outline" onclick="resetCurrentGame()">🔄 Reset Game</button>
+                    <button class="btn btn-sm btn-secondary" onclick="giveGameHint()">💡 Hint</button>
+                </div>
+            </div>
+
+            <!-- Dynamic Game Canvas/Container based on game_type -->
+            <div class="game-workspace" id="gameWorkspace" data-game-type="{{ level.game_type }}">
+                <!-- Rendered dynamically by games.js -->
+                <div class="game-loading-placeholder">
+                    <div class="spinner"></div>
+                    <p>Initializing Campus Game Simulator...</p>
+                </div>
+            </div>
+
+            <!-- Game Actions & Live Feedback Bar -->
+            <div class="game-footer-bar">
+                <div class="game-hint-box" id="gameHintBox" style="display: none;">
+                    <span class="hint-icon">💡</span>
+                    <span class="hint-text" id="gameHintText"></span>
+                </div>
+                <div class="game-action-buttons">
+                    <button class="btn btn-primary btn-glow btn-lg" id="verifyGameBtn" onclick="verifyCurrentGame()">
+                        <span>✨ Verify & Unlock Vault</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- POST-GAME NAVIGATION RIBBON (Appears immediately upon clearing the mini-game) -->
+            <div class="game-complete-ribbon" id="gameCompleteRibbon" style="display: none;">
+                <div class="ribbon-status-box">
+                    <span class="ribbon-sparkle">🎉</span>
+                    <div>
+                        <h4>Mini-Game Solved & Vault Decrypted!</h4>
+                        <p>You can now read the unlocked knowledge, practice writing code, or advance to the next level.</p>
+                    </div>
+                </div>
+                <div class="ribbon-nav-buttons">
+                    <a href="{{ url_for('index') }}" class="btn btn-outline">
+                        <span>🏠 Back to Campus Map</span>
+                    </a>
+                    <button class="btn btn-secondary" onclick="scrollSection('knowledgeVault')">
+                        <span>📖 Read Unlocked Knowledge ⬇</span>
+                    </button>
+                    <button class="btn btn-primary" onclick="scrollSection('codeChallengeSection')">
+                        <span>💻 Practice Code Challenge ⬇</span>
+                    </button>
+                    {% if next_level %}
+                    <a href="{{ url_for('level_view', level_id=next_level.id) }}" class="btn btn-primary btn-glow">
+                        <span>Next Level: {{ next_level.title }} ⏭️</span>
+                    </a>
+                    {% else %}
+                    <a href="{{ url_for('boss_view') }}" class="btn btn-boss btn-glow">
+                        <span>Placement Boss Battle 👔 ⏭️</span>
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- STAGE 2: THE LOCKED KNOWLEDGE VAULT (UNLOCKED BY PLAYING GAME) -->
+    <section class="knowledge-vault-section locked" id="knowledgeVault">
+        <div class="vault-locked-curtain" id="vaultCurtain">
+            <div class="curtain-content">
+                <div class="lock-animation-box">
+                    <span class="lock-graphic">🔒</span>
+                    <div class="laser-ring"></div>
+                </div>
+                <h3>Knowledge Archive Encrypted</h3>
+                <p>The academic dossier for <strong>{{ level.title }}</strong> is locked inside the campus central mainframe. Beat the interactive game above to decrypt the concept!</p>
+                <button class="btn btn-outline" onclick="scrollBackToGame()">⬆ Scroll Up to Play Game</button>
+            </div>
+        </div>
+
+        <div class="vault-unlocked-content" id="vaultUnlockedContent">
+            <div class="vault-header">
+                <div class="vault-title-row">
+                    <span class="vault-icon">🔓</span>
+                    <div>
+                        <h2>Knowledge Archive Decrypted!</h2>
+                        <span class="vault-subtitle">Official College Master Dossier: {{ level.title }}</span>
+                    </div>
+                </div>
+                <span class="unlocked-stamp">VERIFIED ACCESS</span>
+            </div>
+
+            <div class="concept-overview-card">
+                <h3>📌 Conceptual Fundamentals</h3>
+                <p class="overview-text">{{ level.unlocked_content.overview }}</p>
+            </div>
+
+            <div class="deep-dive-grid">
+                {% for item in level.unlocked_content.deep_dive %}
+                <div class="deep-dive-card">
+                    <h4>{{ item.title }}</h4>
+                    {% if item.content %}
+                    <p class="deep-dive-text">{{ item.content }}</p>
+                    {% endif %}
+                    {% if item.code %}
+                    <div class="code-block-wrapper">
+                        <pre><code>{{ item.code }}</code></pre>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+
+            {% if level.unlocked_content.interview_tips %}
+            <div class="interview-tips-card">
+                <div class="tips-header">
+                    <span class="tips-icon">💼</span>
+                    <h4>Campus Placement & Technical Interview Tip</h4>
+                </div>
+                <p class="tips-body">{{ level.unlocked_content.interview_tips }}</p>
+            </div>
+            {% endif %}
+        </div>
+    </section>
+
+    <!-- STAGE 3: LIVE PYTHON CODE CHALLENGE & RUNNER -->
+    <section class="code-challenge-section locked" id="codeChallengeSection">
+        <div class="challenge-card">
+            <div class="challenge-header">
+                <div class="challenge-title-col">
+                    <span class="terminal-icon">💻</span>
+                    <div>
+                        <h2>{{ level.code_challenge.title }}</h2>
+                        <span class="challenge-sub">Code Quest: Write valid Python code and pass the test assertions</span>
+                    </div>
+                </div>
+                <div class="editor-actions">
+                    <button class="btn btn-sm btn-outline" onclick="resetStarterCode()" title="Reset code skeleton">↩ Reset</button>
+                    <button class="btn btn-sm btn-outline" onclick="showChallengeHint()" title="Get a hint for this challenge">💡 Hint</button>
+                    <button class="btn btn-sm btn-secondary" onclick="revealChallengeSolution()" title="View reference solution">👁️ Solution</button>
+                    <button class="btn btn-sm btn-secondary" onclick="runSandboxCode()">▶ Run Test</button>
+                    <button class="btn btn-sm btn-primary btn-glow" onclick="submitChallengeCode()">🚀 Submit & Grade</button>
+                </div>
+            </div>
+
+            <div class="challenge-body">
+                <div class="prompt-box">
+                    <span class="prompt-badge">TASK:</span>
+                    <p class="prompt-text">{{ level.code_challenge.prompt }}</p>
+                </div>
+
+                <div class="editor-terminal-split">
+                    <!-- Code Editor Area -->
+                    <div class="code-editor-wrapper">
+                        <div class="editor-top-bar">
+                            <span class="editor-dot dot-red"></span>
+                            <span class="editor-dot dot-yellow"></span>
+                            <span class="editor-dot dot-green"></span>
+                            <span class="file-name">solution.py</span>
+                        </div>
+                        <textarea id="codeEditor" class="code-textarea" spellcheck="false">{{ level.code_challenge.starter_code }}</textarea>
+                    </div>
+
+                    <!-- Terminal Output Box -->
+                    <div class="terminal-output-wrapper">
+                        <div class="terminal-top-bar">
+                            <span class="terminal-title">🖥️ Execution Console & Test Output</span>
+                            <span class="exec-time" id="execTimeDisplay">0.0 ms</span>
+                        </div>
+                        <div class="terminal-screen" id="terminalScreen">
+                            <div class="term-line term-dim"># Press 'Run Test' or 'Submit & Grade' to execute your code in the Python sandbox.</div>
+                        </div>
+                        <div class="test-results-list" id="testResultsList"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- STAGE 4: CONCEPT MASTERY QUIZ -->
+    {% if level.quiz %}
+    <section class="quiz-section locked" id="quizSection">
+        <div class="quiz-card">
+            <div class="quiz-header">
+                <div class="quiz-title-wrap">
+                    <span class="quiz-icon">📝</span>
+                    <div>
+                        <h2>Concept Mastery Quiz</h2>
+                        <span class="quiz-sub">Reinforce your knowledge with rapid concept checks</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="quiz-body">
+                {% for q in level.quiz %}
+                <div class="quiz-item" data-qindex="{{ loop.index0 }}" data-answer="{{ q.answer }}">
+                    <p class="quiz-question"><strong>Q{{ loop.index }}:</strong> {{ q.question }}</p>
+                    <div class="quiz-options-grid">
+                        {% for opt in q.options %}
+                        <button class="quiz-opt-btn" onclick="checkQuizOption(this, {{ loop.index0 }}, {{ q.answer }}, '{{ q.explanation | replace("'", "\\'") }}')">
+                            <span class="opt-letter">{{ ["A", "B", "C", "D"][loop.index0] }}</span>
+                            <span class="opt-text">{{ opt }}</span>
+                        </button>
+                        {% endfor %}
+                    </div>
+                    <div class="quiz-feedback" style="display: none;"></div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+    {% endif %}
+
+    <!-- STAGE 5: LEVEL VICTORY & ADVANCEMENT FOOTER -->
+    <div class="level-victory-card" id="victoryCard" style="display: none;">
+        <div class="victory-content">
+            <div class="victory-icon-bounce">🏆</div>
+            <h2>Level {{ level.order }} Mastered!</h2>
+            <p>You unlocked the badge <strong>{{ level.badge }}</strong> {{ level.badge_icon }} and earned <strong>+{{ level.xp }} XP</strong>!</p>
+            <div class="victory-actions">
+                {% if next_level %}
+                <a href="{{ url_for('level_view', level_id=next_level.id) }}" class="btn btn-primary btn-glow btn-lg">
+                    <span>Advance to Level {{ next_level.order }}: {{ next_level.title }} 🚀</span>
+                </a>
+                {% else %}
+                <a href="{{ url_for('boss_view') }}" class="btn btn-boss btn-lg">
+                    <span>Proceed to Placement Boss Battle! 👔</span>
+                </a>
+                {% endif %}
+                <a href="{{ url_for('index') }}" class="btn btn-outline btn-lg">
+                    <span>🏠 Back to Campus Map</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Persistent Bottom Level Navigation Bar -->
+    <div class="level-bottom-nav-bar">
+        <div class="bottom-nav-left">
+            <a href="{{ url_for('index') }}" class="btn btn-outline">
+                <span>🏠 Campus Map</span>
+            </a>
+            {% if prev_level %}
+            <a href="{{ url_for('level_view', level_id=prev_level.id) }}" class="btn btn-secondary">
+                <span>◀ Level {{ prev_level.order }}: {{ prev_level.title }}</span>
+            </a>
+            {% endif %}
+        </div>
+        <div class="bottom-nav-right">
+            {% if next_level %}
+            <a href="{{ url_for('level_view', level_id=next_level.id) }}" class="btn btn-primary btn-glow">
+                <span>Next Level {{ next_level.order }}: {{ next_level.title }} ▶</span>
+            </a>
+            {% else %}
+            <a href="{{ url_for('boss_view') }}" class="btn btn-boss btn-glow">
+                <span>Placement Boss Battle 👔 ▶</span>
+            </a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Pass level data into JavaScript scope
+    window.CURRENT_LEVEL = {{ level | tojson }};
+</script>
+<script src="{{ url_for('static', filename='js/games.js') }}"></script>
+<script src="{{ url_for('static', filename='js/runner.js') }}"></script>
+{% endblock %}

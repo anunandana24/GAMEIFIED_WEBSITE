@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}Daily Challenge | PyQuest Campus{% endblock %}
+
+{% block content %}
+<div class="arcade-container">
+    <div class="arcade-hero">
+        <div class="arcade-badge-tag">📅 DAILY ROTATING CHALLENGE</div>
+        <h1 class="arcade-title">Campus Daily Code Challenge</h1>
+        <p class="arcade-sub">Solve today's challenge for bonus XP, coins, and streak rewards!</p>
+    </div>
+
+    <div class="arcade-machine">
+        <div class="machine-header">
+            <div class="machine-stat">
+                <span class="stat-label">CHALLENGE</span>
+                <span class="stat-digit">#TODAY</span>
+            </div>
+            <div class="machine-stat">
+                <span class="stat-label">BONUS</span>
+                <span class="stat-digit">+150 XP</span>
+            </div>
+            <div class="machine-stat">
+                <span class="stat-label">STREAK</span>
+                <span class="stat-digit" id="dailyStreak">0</span>
+            </div>
+        </div>
+
+        <div class="machine-screen">
+            <div class="screen-play-state">
+                <div class="arcade-question-count">Daily Challenge</div>
+                <h3 class="arcade-question-text">Fix the Bug: Find and correct the error in this code</h3>
+                <div class="arcade-code-box">
+                    <pre><code>def calculate_average(nums):
+    total = 0
+    for n in nums:
+        total += n
+    return total / len(nums)
+
+# Test
+print(calculate_average([]))</code></pre>
+                </div>
+                <p style="color: var(--text-secondary); margin-top: 1rem;">Task: Handle edge case for empty list to avoid ZeroDivisionError. Return 0.0 for empty list.</p>
+                <div class="arcade-over-actions" style="margin-top: 2rem;">
+                    <a href="{{ url_for('sandbox_view') }}" class="btn btn-primary btn-glow">Go to Sandbox to Solve</a>
+                    <a href="{{ url_for('index') }}" class="btn btn-outline">Back to Home</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,11 @@
+.venv/
+__pycache__/
+.pytest_cache/
+.kilo/
+.env
+.env.*
+!.env.example
+*.pyc
+*.sqlite
+*.sqlite3
+*.db

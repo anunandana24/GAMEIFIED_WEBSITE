@@ -1,0 +1,229 @@
+{% extends "base.html" %}
+
+{% block title %}Bug Buster Speed Arcade | PyCampus Quest{% endblock %}
+
+{% block content %}
+<div class="arcade-container">
+    <div class="arcade-hero">
+        <div class="arcade-badge-tag">🕹️ RETRO SPEED CHALLENGE</div>
+        <h1 class="arcade-title">Bug Buster: 60-Second Syntax Sprint</h1>
+        <p class="arcade-sub">Test your Python intuition against the ticking clock! Identify bugs, predict outputs, and chain combos to climb the campus leaderboard.</p>
+    </div>
+
+    <!-- Arcade Game Machine Box -->
+    <div class="arcade-machine">
+        <div class="machine-header">
+            <div class="machine-stat">
+                <span class="stat-label">TIME REMAINING</span>
+                <span class="stat-digit" id="arcadeTimer">60s</span>
+            </div>
+            <div class="machine-stat">
+                <span class="stat-label">SCORE</span>
+                <span class="stat-digit" id="arcadeScore">0</span>
+            </div>
+            <div class="machine-stat">
+                <span class="stat-label">COMBO STREAK</span>
+                <span class="stat-digit" id="arcadeStreak">0x</span>
+            </div>
+        </div>
+
+        <div class="machine-screen" id="arcadeScreen">
+            <div class="screen-idle-state" id="arcadeStartScreen">
+                <div class="arcade-pixel-icon">👾</div>
+                <h2>Ready for the Sprint?</h2>
+                <p>You have 60 seconds to answer as many Python questions as possible. Each consecutive right answer multiplies your combo XP!</p>
+                <button class="btn btn-primary btn-glow btn-lg" onclick="startArcadeGame()">
+                    <span>🚀 INSERT COIN / START SPRINT</span>
+                </button>
+            </div>
+
+            <div class="screen-play-state" id="arcadePlayScreen" style="display: none;">
+                <div class="arcade-question-count" id="arcadeQIndex">Question 1 of 15</div>
+                <div class="arcade-code-box">
+                    <pre><code id="arcadeCodeDisplay"># Loading bug question...</code></pre>
+                </div>
+                <h3 class="arcade-question-text" id="arcadeQuestionPrompt">What is the output or issue?</h3>
+                <div class="arcade-options-grid" id="arcadeOptionsGrid">
+                    <!-- Dynamic option buttons -->
+                </div>
+            </div>
+
+            <div class="screen-over-state" id="arcadeOverScreen" style="display: none;">
+                <div class="arcade-pixel-icon">🏆</div>
+                <h2>Time's Up, Coder!</h2>
+                <div class="final-score-display">
+                    <div class="final-stat">
+                        <span class="lbl">FINAL SCORE</span>
+                        <span class="val" id="finalScoreVal">0</span>
+                    </div>
+                    <div class="final-stat">
+                        <span class="lbl">MAX COMBO</span>
+                        <span class="val" id="finalMaxComboVal">0x</span>
+                    </div>
+                    <div class="final-stat">
+                        <span class="lbl">XP AWARDED</span>
+                        <span class="val" id="finalXpVal">+0 XP</span>
+                    </div>
+                </div>
+                <div class="arcade-over-actions">
+                    <button class="btn btn-primary btn-glow" onclick="startArcadeGame()">🔄 Play Again</button>
+                    <a href="{{ url_for('index') }}" class="btn btn-outline">Back to Campus Map</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const ARCADE_QUESTIONS = [
+        {
+            code: "x = [1, 2, 3]\ny = x\ny.append(4)\nprint(len(x))",
+            q: "What does this code print?",
+            options: ["3", "4", "TypeError", "AttributeError"],
+            correct: 1,
+            exp: "x and y point to the same list in memory! Mutating y changes x."
+        },
+        {
+            code: "t = (1, 2, [3, 4])\nt[2].append(5)\nprint(t[2])",
+            q: "What is printed?",
+            options: ["[3, 4, 5]", "TypeError", "(3, 4, 5)", "None"],
+            correct: 0,
+            exp: "The list inside the tuple is mutable even though the tuple reference itself is immutable!"
+        },
+        {
+            code: "def func(a, b=2, *args):\n    return a + b + len(args)\nprint(func(1, 10, 20, 30))",
+            q: "What is the return value?",
+            options: ["13", "33", "61", "TypeError"],
+            correct: 0,
+            exp: "a=1, b=10, args=(20, 30) with len 2. Total: 1 + 10 + 2 = 13."
+        },
+        {
+            code: "s = {1, 2, 2, 3, 3, 3}\nprint(sum(s))",
+            q: "What is the result?",
+            options: ["14", "6", "9", "TypeError"],
+            correct: 1,
+            exp: "Sets only store unique elements {1, 2, 3}. 1 + 2 + 3 = 6."
+        },
+        {
+            code: "try:\n    10 / 0\nexcept ZeroDivisionError:\n    pass\nfinally:\n    print('Done')",
+            q: "What is printed to stdout?",
+            options: ["Nothing", "Done", "ZeroDivisionError", "Crash"],
+            correct: 1,
+            exp: "The finally block always executes regardless of exceptions."
+        },
+        {
+            code: "gen = (x * 2 for x in range(3))\nprint(type(gen))",
+            q: "What is the type of gen?",
+            options: ["<class 'list'>", "<class 'tuple'>", "<class 'generator'>", "<class 'iterator'>"],
+            correct: 2,
+            exp: "Parentheses in comprehensions create a generator expression!"
+        },
+        {
+            code: "nums = [1, 2, 3, 4, 5]\nprint(nums[-3:-1])",
+            q: "What slice is extracted?",
+            options: ["[3, 4]", "[2, 3, 4]", "[3, 4, 5]", "[4, 5]"],
+            correct: 0,
+            exp: "Index -3 is 3, -1 is 5 (excluded). Result: [3, 4]."
+        },
+        {
+            code: "d = {'a': 1, 'b': 2}\nprint(d.get('c', 99))",
+            q: "What is returned?",
+            options: ["KeyError", "None", "99", "0"],
+            correct: 2,
+            exp: ".get() returns the fallback default value (99) when the key does not exist."
+        }
+    ];
+
+    let arcadeTimer = 60;
+    let arcadeScore = 0;
+    let arcadeStreak = 0;
+    let maxCombo = 0;
+    let currentQIdx = 0;
+    let timerInterval = null;
+
+    function startArcadeGame() {
+        arcadeTimer = 60;
+        arcadeScore = 0;
+        arcadeStreak = 0;
+        maxCombo = 0;
+        currentQIdx = 0;
+
+        document.getElementById("arcadeStartScreen").style.display = "none";
+        document.getElementById("arcadeOverScreen").style.display = "none";
+        document.getElementById("arcadePlayScreen").style.display = "block";
+
+        updateMachineHUD();
+        renderArcadeQuestion();
+
+        if (timerInterval) clearInterval(timerInterval);
+        timerInterval = setInterval(() => {
+            arcadeTimer--;
+            updateMachineHUD();
+            if (arcadeTimer <= 0) {
+                endArcadeGame();
+            }
+        }, 1000);
+
+        if (window.soundFX) soundFX.playStart();
+    }
+
+    function updateMachineHUD() {
+        document.getElementById("arcadeTimer").innerText = `${arcadeTimer}s`;
+        document.getElementById("arcadeScore").innerText = arcadeScore;
+        document.getElementById("arcadeStreak").innerText = `${arcadeStreak}x`;
+    }
+
+    function renderArcadeQuestion() {
+        const qData = ARCADE_QUESTIONS[currentQIdx % ARCADE_QUESTIONS.length];
+        document.getElementById("arcadeQIndex").innerText = `Question ${currentQIdx + 1}`;
+        document.getElementById("arcadeCodeDisplay").innerText = qData.code;
+        document.getElementById("arcadeQuestionPrompt").innerText = qData.q;
+
+        const grid = document.getElementById("arcadeOptionsGrid");
+        grid.innerHTML = qData.options.map((opt, idx) => `
+            <button class="arcade-opt-btn" onclick="handleArcadeAnswer(${idx}, ${qData.correct})">
+                <span class="opt-btn-tag">${["A", "B", "C", "D"][idx]}</span>
+                <span>${opt}</span>
+            </button>
+        `).join("");
+    }
+
+    function handleArcadeAnswer(selected, correct) {
+        if (selected === correct) {
+            arcadeStreak++;
+            if (arcadeStreak > maxCombo) maxCombo = arcadeStreak;
+            const points = 100 * arcadeStreak;
+            arcadeScore += points;
+            if (window.soundFX) soundFX.playCoin();
+            showToast(`Correct! +${points} pts (${arcadeStreak}x Combo!)`, "success");
+        } else {
+            arcadeStreak = 0;
+            if (window.soundFX) soundFX.playError();
+            showToast("Miss! Combo reset.", "error");
+        }
+
+        currentQIdx++;
+        updateMachineHUD();
+        renderArcadeQuestion();
+    }
+
+    function endArcadeGame() {
+        clearInterval(timerInterval);
+        document.getElementById("arcadePlayScreen").style.display = "none";
+        document.getElementById("arcadeOverScreen").style.display = "block";
+
+        const xpAward = Math.floor(arcadeScore / 10);
+        document.getElementById("finalScoreVal").innerText = arcadeScore;
+        document.getElementById("finalMaxComboVal").innerText = `${maxCombo}x`;
+        document.getElementById("finalXpVal").innerText = `+${xpAward} XP`;
+
+        // Add XP to student profile
+        if (typeof addXP === "function") {
+            addXP(xpAward);
+        }
+        if (window.soundFX) soundFX.playWin();
+    }
+</script>
+{% endblock %}

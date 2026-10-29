@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+
+{% block title %}Interactive Python Sandbox | PyCampus Quest{% endblock %}
+
+{% block content %}
+<div class="sandbox-container">
+    <div class="sandbox-header">
+        <div>
+            <div class="sandbox-tag">💻 LIVE PYTHON ENGINE</div>
+            <h1 class="sandbox-title">PyCampus Code Playground</h1>
+            <p class="sandbox-sub">An unconstrained, interactive Python runtime. Experiment with all 22 concepts, run algorithms, or load pre-built college project templates.</p>
+        </div>
+        <div class="template-selector-wrap">
+            <label for="templateSelect">Load Concept Preset:</label>
+            <select id="templateSelect" onchange="loadConceptPreset(this.value)">
+                <option value="">-- Choose a Concept Template --</option>
+                {% for lvl in levels %}
+                <option value="{{ lvl.id }}">{{ lvl.order }}. {{ lvl.title }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+
+    <!-- Playground Workspace -->
+    <div class="playground-card">
+        <div class="playground-toolbar">
+            <div class="toolbar-left">
+                <span class="file-tab active">main.py</span>
+                <span class="file-tab" onclick="clearSandbox()">➕ New File</span>
+            </div>
+            <div class="toolbar-right">
+                <button class="btn btn-sm btn-outline" onclick="clearSandbox()">🗑️ Clear</button>
+                <button class="btn btn-primary btn-glow" onclick="executeSandboxCode()">
+                    <span>▶ Run Python Code</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="editor-terminal-split">
+            <div class="code-editor-wrapper">
+                <textarea id="sandboxEditor" class="code-textarea" spellcheck="false"># Welcome to the PyCampus Interactive Sandbox!
+# Write any Python code here, test loops, functions, classes, or regex.
+
+def fibonacci(n):
+    a, b = 0, 1
+    result = []
+    for _ in range(n):
+        result.append(a)
+        a, b = b, a + b
+    return result
+
+print("=== College Python Sandbox Active ===")
+print("First 10 Fibonacci Numbers:", fibonacci(10))
+
+# Try testing list comprehensions
+squares = [x**2 for x in range(1, 6)]
+print("Squares:", squares)
+</textarea>
+            </div>
+
+            <div class="terminal-output-wrapper">
+                <div class="terminal-top-bar">
+                    <span class="terminal-title">🖥️ Output Terminal</span>
+                    <span class="exec-time" id="sandboxExecTime">0.0 ms</span>
+                </div>
+                <div class="terminal-screen" id="sandboxTerminal">
+                    <div class="term-line term-dim"># Press 'Run Python Code' to execute.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const LEVEL_SNIPPETS = {
+        "primitive-types": `# Primitive Data Types Example\nroll_no = 2026101\ncgpa = 9.4\nbranch = 'AI & Data Science'\nis_hostelite = True\nscholarship = None\n\nprint(f"Student: {branch} | CGPA: {cgpa} | Active: {is_hostelite}")\nprint(f"Types: {type(roll_no)}, {type(cgpa)}, {type(branch)}, {type(scholarship)}")`,
+        "non-primitive-types": `import copy\n# Non-Primitive Reference vs Deep Copy\noriginal_team = ['Aarav', ['Sub-Team-Alpha']]\nshallow_copy = list(original_team)\ndeep_copy = copy.deepcopy(original_team)\n\nshallow_copy[1].append('Tampered')\nprint("Original after shallow mutation:", original_team)\nprint("Deep copy remained secure:", deep_copy)`,
+        "lists": `# List Slicing and Comprehensions\nscores = [45, 88, 92, 74, 95, 60, 81]\nhonors = [s for s in scores if s >= 80]\nprint("Honors scores:", honors)\nprint("Top 3 scores (sorted):", sorted(scores, reverse=True)[:3])\nprint("Reversed list via slice:", scores[::-1])`,
+        "tuples": `# Tuples and Unpacking\nstudent_record = ('CS101', 'Meera Nair', 9.8, 'Semester 6')\ncode, name, gpa, sem = student_record\nprint(f"Unpacked: {name} scored {gpa} in {sem}")\n\n# Tuples as immutable dictionary keys\nroom_map = {(1, 101): 'Hostel Block A', (1, 102): 'Hostel Block B'}\nprint("Room (1, 101) belongs to:", room_map[(1, 101)])`,
+        "sets": `# Sets & Venn Operations\ncoding_club = {'Aarav', 'Meera', 'Vikram', 'Sneha'}\nrobotics_club = {'Vikram', 'Sneha', 'Karan', 'Tanvi'}\n\nprint("Dual members (Intersection):", coding_club & robotics_club)\nprint("Exclusive coding members:", coding_club - robotics_club)\nprint("All unique students (Union):", coding_club | robotics_club)`,
+        "dicts": `# Dictionaries and safe .get()\nmenu = {'Samosa': 15, 'Masala Dosa': 50, 'Cold Coffee': 40}\norder = ['Samosa', 'Brownie', 'Cold Coffee']\n\ntotal = sum(menu.get(item, 0) for item in order)\nprint("Order Total Bill:", total)\nprint("Item breakdown:", {item: menu.get(item, 'Unavailable') for item in order})`,
+        "functions": `# Flexible Function Parameters\ndef campus_event_manager(title, *performers, budget=50000, **metadata):\n    print(f"=== {title} ===")\n    print(f"Lineup: {', '.join(performers)}")\n    print(f"Budget: ₹{budget}")\n    for k, v in metadata.items():\n        print(f"  {k}: {v}")\n\ncampus_event_manager('Hackathon 2026', 'Aarav', 'Sneha', 'Dev', venue='Lab 4', food='Pizza')`,
+        "classes-objects": `class CampusRobot:\n    def __init__(self, name, battery=100):\n        self.name = name\n        self.battery = battery\n\n    def study_session(self, hours):\n        cost = hours * 10\n        if self.battery >= cost:\n            self.battery -= cost\n            print(f"{self.name} completed {hours} hours of study! Battery at {self.battery}%")\n        else:\n            print(f"{self.name} needs a recharge!")\n\nbot = CampusRobot('PyBot', 80)\nbot.study_session(3)`,
+        "encapsulation": `class SecureGpaVault:\n    def __init__(self, initial_gpa=0.0):\n        self.__gpa = initial_gpa  # Private attribute\n\n    @property\n    def gpa(self):\n        return self.__gpa\n\n    @gpa.setter\n    def gpa(self, value):\n        if 0.0 <= value <= 10.0:\n            self.__gpa = value\n        else:\n            raise ValueError("GPA must be between 0.0 and 10.0!")\n\nvault = SecureGpaVault(8.5)\nprint("Current GPA:", vault.gpa)\nvault.gpa = 9.8\nprint("Updated GPA:", vault.gpa)`,
+        "inheritance": `class Person:\n    def __init__(self, name, email):\n        self.name = name\n        self.email = email\n\nclass Student(Person):\n    def __init__(self, name, email, roll_no):\n        super().__init__(name, email)\n        self.roll_no = roll_no\n\n    def display(self):\n        return f"{self.name} ({self.roll_no}) -> {self.email}"\n\ns = Student('Aditya', 'aditya@univ.edu', '2026CS45')\nprint(s.display())`,
+        "polymorphism": `class Guitarist:\n    def perform(self): return "Strumming electric solo! 🎸"\n\nclass Vocalist:\n    def perform(self): return "Singing classical high notes! 🎤"\n\ndef fest_stage(artist):\n    print("Stage active:", artist.perform())\n\nfor act in [Guitarist(), Vocalist()]:\n    fest_stage(act)`,
+        "abstraction": `from abc import ABC, abstractmethod\n\nclass SmartSensor(ABC):\n    @abstractmethod\n    def read_telemetry(self): pass\n\nclass TempSensor(SmartSensor):\n    def read_telemetry(self):\n        return {"room": "Library", "temp_c": 22.5}\n\ns = TempSensor()\nprint(s.read_telemetry())`,
+        "exceptions": `def safe_divide_semester(marks, total_subjects):\n    try:\n        avg = marks / total_subjects\n    except ZeroDivisionError:\n        print("Warning: Division by zero caught! Defaulting to 0.0")\n        return 0.0\n    else:\n        print("Calculation successful!")\n        return avg\n    finally:\n        print("Audit logged.")\n\nprint("Result 1:", safe_divide_semester(85, 5))\nprint("Result 2:", safe_divide_semester(85, 0))`,
+        "file-handling": `# Demonstrating file operations in memory / text format\nimport io\n\nstream = io.StringIO()\nstream.write("ID: 101, Name: Rohan\\n")\nstream.write("ID: 102, Name: Sneha\\n")\n\nstream.seek(0)\nfor line in stream:\n    print("Read record:", line.strip())`,
+        "higher-order-functions": `from functools import reduce\nscores = [65, 82, 90, 74, 95]\n\n# Filter scores >= 80\nhigh = list(filter(lambda s: s >= 80, scores))\n# Map grace marks\nboosted = list(map(lambda s: s + 2, high))\n# Reduce to sum\ntotal = reduce(lambda acc, x: acc + x, boosted, 0)\n\nprint("Boosted high scores:", boosted)\nprint("Total sum:", total)`,
+        "database": `import sqlite3\n\nconn = sqlite3.connect(':memory:')\ncur = conn.cursor()\ncur.execute('CREATE TABLE students (id INT, name TEXT, gpa REAL)')\ncur.executemany('INSERT INTO students VALUES (?, ?, ?)', [(1, 'Aarav', 9.1), (2, 'Sara', 8.4)])\nconn.commit()\n\ncur.execute('SELECT name, gpa FROM students WHERE gpa >= 8.5')\nprint("High GPA students:", cur.fetchall())\nconn.close()`,
+        "regex": `import re\ntext = "Contact: dev.cs26@university.edu or student_help@univ.edu by 5 PM"\nemails = re.findall(r'[\\w\\.]+@[\\w\\.]+\\.edu', text)\nprint("Extracted university emails:", emails)`,
+        "multithreading": `import threading, time\ncounter = 0\nlock = threading.Lock()\n\ndef safe_ticket_worker(t_id):\n    global counter\n    with lock:\n        current = counter\n        time.sleep(0.001)\n        counter = current + 1\n        print(f"Thread {t_id} incremented counter to {counter}")\n\nthreads = [threading.Thread(target=safe_ticket_worker, args=(i,)) for i in range(5)]\nfor t in threads: t.start()\nfor t in threads: t.join()\nprint("Final count:", counter)`,
+        "json-pickle": `import json, pickle\ndata = {'student': 'Ananya', 'cgpa': 9.2, 'passed': True}\n\n# JSON\njson_str = json.dumps(data)\nprint("JSON string:", json_str)\n\n# PICKLE\nblob = pickle.dumps(data)\nprint("Pickle binary bytes:", blob[:25], "...")\nprint("Restored from pickle:", pickle.loads(blob))`,
+        "iterators": `class SemesterCountdown:\n    def __init__(self, start):\n        self.curr = start\n    def __iter__(self):\n        return self\n    def __next__(self):\n        if self.curr < 1:\n            raise StopIteration\n        val = self.curr\n        self.curr -= 1\n        return val\n\nfor count in SemesterCountdown(3):\n    print(f"T-minus {count} days to semester exams!")`,
+        "generators": `def student_id_generator(prefix, total):\n    for i in range(1, total + 1):\n        yield f"{prefix}-{i:04d}"\n\ngen = student_id_generator("USN2026", 4)\nfor usn in gen:\n    print("Generated token:", usn)`,
+        "decorators": `import time\nfrom functools import wraps\n\ndef logger_decorator(func):\n    @wraps(func)\n    def wrapper(*args, **kwargs):\n        print(f"Calling function '{func.__name__}' with args: {args}")\n        res = func(*args, **kwargs)\n        print(f"Function '{func.__name__}' returned: {res}")\n        return res\n    return wrapper\n\n@logger_decorator\ndef calculate_stipend(base, bonus):\n    return base + bonus\n\ncalculate_stipend(25000, 5000)`
+    };
+
+    function loadConceptPreset(conceptId) {
+        if (!conceptId || !LEVEL_SNIPPETS[conceptId]) return;
+        document.getElementById("sandboxEditor").value = LEVEL_SNIPPETS[conceptId];
+        showToast(`Loaded ${conceptId} template`, "info");
+    }
+
+    function clearSandbox() {
+        document.getElementById("sandboxEditor").value = "";
+        document.getElementById("sandboxTerminal").innerHTML = '<div class="term-line term-dim"># Terminal cleared.</div>';
+    }
+
+    async function executeSandboxCode() {
+        const code = document.getElementById("sandboxEditor").value;
+        const term = document.getElementById("sandboxTerminal");
+        term.innerHTML = '<div class="term-line term-dim"># Executing Python code...</div>';
+
+        try {
+            const resp = await fetch("/api/run_code", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({ code: code })
+            });
+            const data = await resp.json();
+
+            document.getElementById("sandboxExecTime").innerText = `${data.elapsed || 0} ms`;
+
+            if (!data.success) {
+                term.innerHTML = `<div class="term-line term-err">❌ Error: ${escapeHtml(data.error)}</div>`;
+                if (data.output) {
+                    term.innerHTML += `<div class="term-line term-out">${escapeHtml(data.output)}</div>`;
+                }
+                if (window.soundFX) soundFX.playError();
+                return;
+            }
+
+            let html = `<div class="term-line term-succ">✔ Execution finished in ${data.elapsed}ms</div>`;
+            if (data.output) {
+                html += `<div class="term-line term-out">${escapeHtml(data.output)}</div>`;
+            } else {
+                html += `<div class="term-line term-dim">(No stdout produced)</div>`;
+            }
+            if (data.stderr) {
+                html += `<div class="term-line term-err">${escapeHtml(data.stderr)}</div>`;
+            }
+            term.innerHTML = html;
+            if (window.soundFX) soundFX.playCoin();
+        } catch (err) {
+            term.innerHTML = `<div class="term-line term-err">Network error: ${err.message}</div>`;
+        }
+    }
+</script>
+{% endblock %}

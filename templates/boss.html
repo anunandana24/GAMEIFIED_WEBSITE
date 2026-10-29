@@ -1,0 +1,287 @@
+{% extends "base.html" %}
+
+{% block title %}Placement Boss Battle | PyCampus Quest{% endblock %}
+
+{% block content %}
+<div class="boss-page-container">
+    <div class="boss-stage-card">
+        <!-- Boss Banner -->
+        <div class="boss-stage-header">
+            <div class="interviewer-avatar-wrap">
+                <span class="interviewer-avatar">👨‍💼</span>
+                <span class="live-status-dot"></span>
+            </div>
+            <div class="interviewer-meta">
+                <span class="boss-level-tag">👔 LEVEL 23 CAPSTONE BOSS</span>
+                <h1 class="boss-title">{{ boss.title }}</h1>
+                <p class="boss-desc">{{ boss.description }}</p>
+            </div>
+            <div class="boss-rounds-tracker">
+                <a href="{{ url_for('index') }}" class="btn btn-sm btn-outline" style="margin-right:10px;">
+                    <span>🏠 Campus Map</span>
+                </a>
+                <div class="round-step active" id="roundStep1">Round 1</div>
+                <div class="round-sep"></div>
+                <div class="round-step" id="roundStep2">Round 2</div>
+                <div class="round-sep"></div>
+                <div class="round-step" id="roundStep3">Round 3</div>
+            </div>
+        </div>
+
+        <!-- Boss Dialogue Box -->
+        <div class="recruiter-dialogue-box">
+            <div class="recruiter-speech-bubble" id="bossSpeechBubble">
+                <strong>Senior Tech Lead:</strong> "Welcome candidate. Write your clean implementation in the editor below and submit when ready!"
+            </div>
+        </div>
+
+        <!-- Round Task Area -->
+        <div class="boss-round-workspace">
+            <div class="round-scenario-header">
+                <div class="round-title-row">
+                    <h3 id="currentRoundTitle">Round 1: Collections & Algorithmic Filtering</h3>
+                    <div class="round-hints-group">
+                        <button class="btn btn-sm btn-outline" onclick="showBossHint()">💡 Interview Hint</button>
+                        <button class="btn btn-sm btn-secondary" onclick="revealBossSolution()">👁️ View Solution</button>
+                    </div>
+                </div>
+                <p id="currentRoundScenario" class="scenario-text">The recruiter asks you to clean and deduplicate candidate data from campus placement files.</p>
+                <div class="prompt-box">
+                    <span class="prompt-badge">SPECIFICATION:</span>
+                    <p class="prompt-text" id="currentRoundQuestion">Loading question...</p>
+                </div>
+            </div>
+
+            <div class="editor-terminal-split">
+                <div class="code-editor-wrapper">
+                    <div class="editor-top-bar">
+                        <span class="editor-dot dot-red"></span>
+                        <span class="editor-dot dot-yellow"></span>
+                        <span class="editor-dot dot-green"></span>
+                        <span class="file-name">interview_solution.py</span>
+                    </div>
+                    <textarea id="bossCodeEditor" class="code-textarea" spellcheck="false"></textarea>
+                </div>
+
+                <div class="terminal-output-wrapper">
+                    <div class="terminal-top-bar">
+                        <span class="terminal-title">🖥️ Interviewer Test Runner Console</span>
+                        <span class="exec-time" id="bossExecTime">0.0 ms</span>
+                    </div>
+                    <div class="terminal-screen" id="bossTerminalScreen">
+                        <div class="term-line term-dim"># Round 1 loaded. Write your code and click Submit.</div>
+                    </div>
+                    <div class="test-results-list" id="bossTestResultsList"></div>
+                </div>
+            </div>
+
+            <div class="boss-actions-bar">
+                <a href="{{ url_for('index') }}" class="btn btn-outline">🏠 Back to Campus Map</a>
+                <button class="btn btn-outline" onclick="resetBossCode()">↩ Reset Code</button>
+                <button class="btn btn-secondary" onclick="runBossTest()">▶ Test Run</button>
+                <button class="btn btn-boss btn-glow btn-lg" onclick="submitBossSolution()">
+                    <span>🚀 Submit to Interview Panel</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Placement Offer Letter Modal (Appears upon passing all 3 rounds) -->
+    <div class="modal-backdrop" id="offerLetterModal" style="display: none;">
+        <div class="modal-card offer-card">
+            <div class="offer-seal">🏆</div>
+            <h2>OFFICIAL PLACEMENT OFFER LETTER</h2>
+            <p class="offer-sub">Campus Placement Cell & Senior Engineering Board</p>
+
+            <div class="offer-body">
+                <p>Congratulations, <strong id="offerStudentName">Student</strong>!</p>
+                <p>Based on your exceptional performance across all 3 Technical Interview rounds, you have been selected for the role of:</p>
+                <div class="job-title-pill">🌟 Lead Python Software Engineer</div>
+                <p><strong>Package:</strong> ₹ 32,00,000 CTC + 5,000 Stock Grants</p>
+                <p><strong>Badge Awarded:</strong> Python Placement Grandmaster 🎓</p>
+            </div>
+
+            <div class="modal-actions">
+                <a href="{{ url_for('certificate_view') }}" class="btn btn-primary btn-glow">
+                    <span>📜 Claim Verified Certificate</span>
+                </a>
+                <a href="{{ url_for('index') }}" class="btn btn-outline">Back to Campus Hub</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const BOSS_DATA = {{ boss | tojson }};
+    let currentRoundIndex = 0;
+
+    document.addEventListener("DOMContentLoaded", function() {
+        loadBossRound(0);
+    });
+
+    function loadBossRound(idx) {
+        currentRoundIndex = idx;
+        const round = BOSS_DATA.rounds[idx];
+
+        document.getElementById("roundStep1").className = idx === 0 ? "round-step active" : (idx > 0 ? "round-step completed" : "round-step");
+        document.getElementById("roundStep2").className = idx === 1 ? "round-step active" : (idx > 1 ? "round-step completed" : "round-step");
+        document.getElementById("roundStep3").className = idx === 2 ? "round-step active" : "round-step";
+
+        document.getElementById("currentRoundTitle").innerText = round.title;
+        document.getElementById("currentRoundScenario").innerText = round.scenario;
+        document.getElementById("currentRoundQuestion").innerText = round.question;
+        document.getElementById("bossCodeEditor").value = round.starter_code;
+
+        document.getElementById("bossTerminalScreen").innerHTML = `<div class="term-line term-dim"># Round ${round.round_num} loaded. Write your code and click Submit.</div>`;
+        document.getElementById("bossTestResultsList").innerHTML = "";
+
+        // Clean dialogue update
+        const dialogue = [
+            "Let's see how cleanly you handle data filtering and collections. Write your solution from scratch and run tests!",
+            "Great progress. Now demonstrate your object-oriented system design skills with polymorphic notification services.",
+            "Final round! Build a resilient retry decorator that gracefully handles exceptions."
+        ][idx];
+        document.getElementById("bossSpeechBubble").innerHTML = `<strong>👨‍💼 Senior Tech Lead:</strong> "${dialogue}"`;
+    }
+
+    function resetBossCode() {
+        document.getElementById("bossCodeEditor").value = BOSS_DATA.rounds[currentRoundIndex].starter_code;
+        showToast("Code reset to starter template", "info");
+    }
+
+    function showBossHint() {
+        const round = BOSS_DATA.rounds[currentRoundIndex];
+        const hints = [
+            "Hint: Use a list comprehension with conditions: `r['cgpa'] >= 7.5 and len(r['skills']) >= 2`, and apply `r['name'].upper()`.",
+            "Hint: EmailService and SmsService should both implement `.notify(recipient, msg)` returning formatted f-strings.",
+            "Hint: Inside the wrapper, run a loop for `range(max_retries)` with `try: return func(...) except Exception: pass`."
+        ];
+        showToast(hints[currentRoundIndex], "info");
+        if (window.soundFX) soundFX.playCoin();
+    }
+
+    function revealBossSolution() {
+        if (confirm("Would you like to load the reference solution into the editor? Use this to learn and compare with your implementation.")) {
+            const round = BOSS_DATA.rounds[currentRoundIndex];
+            document.getElementById("bossCodeEditor").value = round.solution_code;
+            showToast("Reference solution loaded", "info");
+            if (window.soundFX) soundFX.playCoin();
+        }
+    }
+
+    async function runBossTest() {
+        const code = document.getElementById("bossCodeEditor").value;
+        const round = BOSS_DATA.rounds[currentRoundIndex];
+        const firstTest = round.tests[0];
+
+        const term = document.getElementById("bossTerminalScreen");
+        term.innerHTML = `<div class="term-line term-dim"># Executing interview test in sandbox...</div>`;
+
+        try {
+            const resp = await fetch("/api/run_code", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({
+                    code: code,
+                    test_input_expr: firstTest.input,
+                    expected_result: firstTest.expected
+                })
+            });
+            const data = await resp.json();
+
+            document.getElementById("bossExecTime").innerText = `${data.elapsed || 0} ms`;
+
+            if (!data.success) {
+                term.innerHTML = `<div class="term-line term-err">❌ Error: ${data.error}</div>`;
+                if (window.soundFX) soundFX.playError();
+                return;
+            }
+
+            let html = `<div class="term-line term-succ">✔ Code executed in ${data.elapsed}ms</div>`;
+            if (data.output) {
+                html += `<div class="term-line term-out">${escapeHtml(data.output)}</div>`;
+            }
+            if (data.eval_result) {
+                html += `<div class="term-line">Result: <code>${escapeHtml(data.eval_result)}</code></div>`;
+            }
+            term.innerHTML = html;
+        } catch (err) {
+            term.innerHTML = `<div class="term-line term-err">Network error: ${err.message}</div>`;
+        }
+    }
+
+    async function submitBossSolution() {
+        const code = document.getElementById("bossCodeEditor").value;
+        const round = BOSS_DATA.rounds[currentRoundIndex];
+        const term = document.getElementById("bossTerminalScreen");
+        const resultsBox = document.getElementById("bossTestResultsList");
+
+        term.innerHTML = `<div class="term-line term-dim"># Evaluating test suites against panel criteria...</div>`;
+        resultsBox.innerHTML = "";
+
+        let allPassed = true;
+        for (let i = 0; i < round.tests.length; i++) {
+            const test = round.tests[i];
+            try {
+                const resp = await fetch("/api/run_code", {
+                    method: "POST",
+                    headers: {"Content-Type": "application/json"},
+                    body: JSON.stringify({
+                        code: code,
+                        test_input_expr: test.input,
+                        expected_result: test.expected
+                    })
+                });
+                const res = await resp.json();
+                if (!res.success || res.passed_assertion === false) {
+                    allPassed = false;
+                    resultsBox.innerHTML += `
+                        <div class="test-item fail">
+                            <span class="icon">❌</span>
+                            <div class="test-detail">
+                                <div><strong>Test Case ${i+1} Failed:</strong> Expected ${test.expected}</div>
+                                <div class="actual-val">Got: ${res.eval_result || res.error}</div>
+                            </div>
+                        </div>
+                    `;
+                    break;
+                } else {
+                    resultsBox.innerHTML += `
+                        <div class="test-item pass">
+                            <span class="icon">✔</span>
+                            <div class="test-detail">
+                                <div><strong>Test Case ${i+1} Passed:</strong> Output matched criteria</div>
+                            </div>
+                        </div>
+                    `;
+                }
+            } catch (err) {
+                allPassed = false;
+            }
+        }
+
+        if (allPassed) {
+            if (window.soundFX) soundFX.playWin();
+            if (currentRoundIndex < BOSS_DATA.rounds.length - 1) {
+                showToast(`Round ${currentRoundIndex + 1} Cleared! Moving to next round...`, "success");
+                setTimeout(() => {
+                    loadBossRound(currentRoundIndex + 1);
+                }, 1500);
+            } else {
+                // Completed all 3 rounds!
+                showToast("All Technical Rounds Cleared! You got the job offer!", "success");
+                const profile = getStudentProfile();
+                document.getElementById("offerStudentName").innerText = profile.name || "College Coder";
+                document.getElementById("offerLetterModal").style.display = "flex";
+                if (typeof addXP === "function") addXP(500);
+                if (typeof triggerConfetti === "function") triggerConfetti();
+            }
+        } else {
+            if (window.soundFX) soundFX.playError();
+            showToast("Solution did not pass test assertions. Please revise.", "error");
+        }
+    }
+</script>
+{% endblock %}
